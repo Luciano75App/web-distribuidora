@@ -1,69 +1,93 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { STORE } from '@/lib/types'
+import { STORE, fmtARS } from '@/lib/types'
+import type { Producto, Promo } from '@/lib/types'
+import { ProductMedia } from './ProductMedia'
 
-const PROMOS = [
-  { eyebrow: 'ENVÍO SIN CARGO', title: 'Envío gratis desde $30.000', sub: 'En todos tus pedidos a domicilio por Córdoba.', img: 'pan-artesanal-blanco.png', accent: '#2b6cb0', cat: 'all', cta: 'Ver catálogo' },
-  { eyebrow: 'RECIÉN LLEGADOS', title: 'Alfajores Mimago', sub: 'Maicena, blanco, negro y black — por unidad o blister.', img: 'alf-maicena-70.jpg', accent: '#a86b3f', cat: 'alfajores', cta: 'Ver alfajores' },
-  { eyebrow: 'FRESCAS TODOS LOS DÍAS', title: 'Pastas Bettini & Quiero', sub: 'Sorrentinos, ravioles, capellettis y tapas.', img: 'quiero-sorrentinos.avif', accent: '#e6a23c', cat: 'pastas', cta: 'Ver pastas' },
-  { eyebrow: 'DE LA CASA', title: 'Tortas caseras Veneziana', sub: 'Dulce de leche, limón, naranja y chips.', img: 'torta-dulce-de-leche.jpg', accent: '#c66b6b', cat: 'tortas', cta: 'Ver tortas' },
-]
-
-function PromoCarousel({ onJump }: { onJump: (cat: string) => void }) {
+function PromoCarousel({
+  promos, products, onAdd,
+}: {
+  promos: Promo[]
+  products: Producto[]
+  onAdd: (id: string) => void
+}) {
   const [i, setI] = useState(0)
   const [paused, setPaused] = useState(false)
-  const n = PROMOS.length
+  const n = promos.length
   const go = (d: number) => setI((p) => (p + d + n) % n)
 
   useEffect(() => {
-    if (paused) return
+    if (paused || n <= 1) return
     const id = setInterval(() => setI((p) => (p + 1) % n), 4800)
     return () => clearInterval(id)
   }, [paused, n])
 
+  if (n === 0) return null
+
   return (
     <div className="promo" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       <div className="promo__track" style={{ transform: `translateX(-${i * 100}%)` }}>
-        {PROMOS.map((p, k) => (
-          <article key={k} className="promo__slide" style={{ '--accent': p.accent } as React.CSSProperties}>
-            <div className="promo__text">
-              <p className="promo__eyebrow">{p.eyebrow}</p>
-              <h3 className="promo__title">{p.title}</h3>
-              <p className="promo__sub">{p.sub}</p>
-              <button className="promo__cta" onClick={() => onJump(p.cat)}>
-                {p.cta}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-            <div className="promo__badge">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={'/productos/' + p.img} alt={p.title} loading="lazy" />
-            </div>
-          </article>
-        ))}
+        {promos.map((p) => {
+          const producto = p.producto_id ? products.find(pr => pr.id === p.producto_id) : undefined
+          const agotado = producto && producto.stock_actual <= 0
+          return (
+            <article key={p.id} className="promo__slide" style={{ '--accent': '#e8c468' } as React.CSSProperties}>
+              <div className="promo__text">
+                {producto && <p className="promo__eyebrow">{fmtARS(producto.precio_venta)}</p>}
+                <h3 className="promo__title">{p.titulo}</h3>
+                {p.texto && <p className="promo__sub">{p.texto}</p>}
+                {producto && (
+                  <button className="promo__cta" onClick={() => onAdd(producto.id)} disabled={agotado}>
+                    {agotado ? 'Sin stock' : 'Agregar al carrito'}
+                    {!agotado && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
+                    )}
+                  </button>
+                )}
+              </div>
+              <div className="promo__badge">
+                {producto ? (
+                  <ProductMedia p={producto} />
+                ) : p.imagen_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.imagen_url} alt={p.titulo} loading="lazy" />
+                ) : null}
+              </div>
+            </article>
+          )
+        })}
       </div>
 
-      <button className="promo__arrow promo__arrow--prev" onClick={() => go(-1)} aria-label="Anterior">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M15 6l-6 6 6 6" /></svg>
-      </button>
-      <button className="promo__arrow promo__arrow--next" onClick={() => go(1)} aria-label="Siguiente">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M9 6l6 6-6 6" /></svg>
-      </button>
-
-      <div className="promo__dots">
-        {PROMOS.map((_, k) => (
-          <button key={k} className={'promo__dot ' + (k === i ? 'active' : '')} onClick={() => setI(k)} aria-label={`Promo ${k + 1}`} />
-        ))}
-      </div>
+      {n > 1 && (
+        <>
+          <button className="promo__arrow promo__arrow--prev" onClick={() => go(-1)} aria-label="Anterior">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M15 6l-6 6 6 6" /></svg>
+          </button>
+          <button className="promo__arrow promo__arrow--next" onClick={() => go(1)} aria-label="Siguiente">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M9 6l6 6-6 6" /></svg>
+          </button>
+          <div className="promo__dots">
+            {promos.map((p, k) => (
+              <button key={p.id} className={'promo__dot ' + (k === i ? 'active' : '')} onClick={() => setI(k)} aria-label={`Promo ${k + 1}`} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
-export function Hero({ onJump }: { onJump: (cat: string) => void }) {
+export function Hero({
+  promos, products, onAddPromo,
+}: {
+  promos: Promo[]
+  products: Producto[]
+  onAddPromo: (id: string) => void
+}) {
   return (
     <section className="hero">
-      <div className="hero__grid">
+      <div className="hero__grid" style={promos.length === 0 ? { gridTemplateColumns: '1fr' } : undefined}>
         <div className="hero__card">
           <p className="hero__eyebrow">◆ MAYORISTA & MINORISTA · CÓRDOBA</p>
           <h1 className="hero__title">
@@ -102,7 +126,7 @@ export function Hero({ onJump }: { onJump: (cat: string) => void }) {
           </div>
         </div>
 
-        <PromoCarousel onJump={onJump} />
+        {promos.length > 0 && <PromoCarousel promos={promos} products={products} onAdd={onAddPromo} />}
       </div>
     </section>
   )

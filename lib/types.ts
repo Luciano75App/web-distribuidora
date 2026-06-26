@@ -11,6 +11,15 @@ export interface Producto {
   imagen_url?: string | null
 }
 
+export interface Promo {
+  id: string
+  titulo: string
+  texto: string | null
+  imagen_url: string | null
+  producto_id: string | null
+  orden: number
+}
+
 export interface Categoria {
   id: string
   label: string

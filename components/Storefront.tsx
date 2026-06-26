@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { CATEGORIAS_BASE, STORE } from '@/lib/types'
-import type { Producto } from '@/lib/types'
+import type { Producto, Promo } from '@/lib/types'
 import { Header } from './Header'
 import { Hero } from './Hero'
 import { CategoryShowcase } from './CategoryShowcase'
@@ -12,7 +12,7 @@ import { CartDrawer } from './CartDrawer'
 import { Checkout } from './Checkout'
 import { Footer } from './Footer'
 
-export function Storefront({ products }: { products: Producto[] }) {
+export function Storefront({ products, promos }: { products: Producto[]; promos: Promo[] }) {
   const [query, setQuery] = useState('')
   const [activeCat, setActiveCat] = useState('all')
   const [cart, setCart] = useState<Record<string, number>>({})
@@ -32,6 +32,7 @@ export function Storefront({ products }: { products: Producto[] }) {
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0)
 
   function add(id: string) { setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 })) }
+  function addFromPromo(id: string) { add(id); setCartOpen(true) }
   function inc(id: string) { setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 })) }
   function dec(id: string) {
     setCart((c) => {
@@ -60,7 +61,7 @@ export function Storefront({ products }: { products: Producto[] }) {
     <>
       <Header query={query} onQuery={setQuery} cartCount={cartCount} onOpenCart={() => setCartOpen(true)} />
 
-      <Hero onJump={jumpToCat} />
+      <Hero promos={promos} products={products} onAddPromo={addFromPromo} />
 
       <CategoryShowcase counts={counts} onSelect={jumpToCat} />
 
