@@ -5,6 +5,7 @@ import { CATEGORIAS_BASE, STORE } from '@/lib/types'
 import type { Producto } from '@/lib/types'
 import { Header } from './Header'
 import { Hero } from './Hero'
+import { CategoryShowcase } from './CategoryShowcase'
 import { CategoryBar } from './CategoryBar'
 import { Catalog } from './Catalog'
 import { CartDrawer } from './CartDrawer'
@@ -60,6 +61,8 @@ export function Storefront({ products }: { products: Producto[] }) {
       <Header query={query} onQuery={setQuery} cartCount={cartCount} onOpenCart={() => setCartOpen(true)} />
 
       <Hero onJump={jumpToCat} />
+
+      <CategoryShowcase counts={counts} onSelect={jumpToCat} />
 
       <CategoryBar active={activeCat} onSelect={setActiveCat} counts={counts} />
 
