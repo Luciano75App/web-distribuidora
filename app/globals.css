@@ -310,6 +310,25 @@ a { color: inherit; }
   .promo__text { max-width: 58%; }
 }
 
+@media (max-width: 640px) {
+  .promo { min-height: auto; }
+  .promo__slide {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+    padding: 24px 20px 56px;
+  }
+  .promo__text { max-width: 100%; }
+  .promo__cta { position: static; margin-top: 14px; }
+  .promo__badge {
+    position: static;
+    transform: none;
+    width: 150px; height: 150px;
+    margin: 18px auto 0;
+  }
+  .promo__dots { left: 20px; }
+}
+
 /* ====== CATEGORY SHOWCASE (carrusel de categorías) ====== */
 .cat-showcase {
   max-width: 1320px; margin: 0 auto;
