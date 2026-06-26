@@ -255,10 +255,10 @@ a { color: inherit; }
 }
 .promo__sub { font-size: 13.5px; color: var(--ink-2); margin: 0; max-width: 34ch; line-height: 1.45; }
 .promo__cta {
-  position: relative;
+  position: absolute;
+  left: 32px;
+  bottom: 54px;
   z-index: 2;
-  align-self: start;
-  justify-self: start;
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--gold);
   color: #1a1207;
@@ -266,9 +266,11 @@ a { color: inherit; }
   font-size: 13.5px;
   padding: 11px 18px;
   border-radius: 999px;
+  border: none;
   transition: transform .15s, box-shadow .2s;
 }
-.promo__cta:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(232,196,104,.6); }
+.promo__cta:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(232,196,104,.6); }
+.promo__cta:disabled { opacity: .5; cursor: not-allowed; }
 .promo__badge {
   position: absolute;
   right: 22px; top: 50%;
