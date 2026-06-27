@@ -8,7 +8,7 @@ export default async function Home() {
   const [{ data: products }, { data: promos }] = await Promise.all([
     supabase
       .from('productos_publicos')
-      .select('id, nombre, marca, proveedor, categoria, presentacion, unidad_medida, precio_venta, stock_actual, imagen_url')
+      .select('id, nombre, marca, proveedor, categoria, presentacion, unidad_medida, precio_venta, stock_actual, imagen_url, precio_mayorista')
       .order('nombre'),
     supabase
       .from('cartelera_publica')

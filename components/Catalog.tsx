@@ -1,17 +1,18 @@
 'use client'
 
-import { CATEGORIAS_BASE, fmtARS } from '@/lib/types'
-import type { Producto } from '@/lib/types'
+import { CATEGORIAS_BASE, fmtARS, precioPara } from '@/lib/types'
+import type { Producto, TipoCliente } from '@/lib/types'
 import { ProductMedia } from './ProductMedia'
 
 function ProductCard({
-  p, qty, onAdd, onInc, onDec,
+  p, qty, onAdd, onInc, onDec, tipoCliente,
 }: {
   p: Producto
   qty: number
   onAdd: (id: string) => void
   onInc: (id: string) => void
   onDec: (id: string) => void
+  tipoCliente: TipoCliente
 }) {
   const cat = CATEGORIAS_BASE.find((c) => c.id === (p.categoria ?? 'otros')) ?? CATEGORIAS_BASE[0]
   const inCart = qty > 0
@@ -29,7 +30,7 @@ function ProductCard({
         <div className="card__unit">{p.presentacion ?? p.unidad_medida ?? ''}</div>
         <div className="card__foot">
           <div className="card__price">
-            {fmtARS(p.precio_venta)}
+            {fmtARS(precioPara(p, tipoCliente))}
             <span className="card__price-unit"> /u</span>
           </div>
           {agotado ? (
@@ -50,7 +51,7 @@ function ProductCard({
 }
 
 export function Catalog({
-  cat, query, cart, products, onAdd, onInc, onDec,
+  cat, query, cart, products, onAdd, onInc, onDec, tipoCliente,
 }: {
   cat: string
   query: string
@@ -59,6 +60,7 @@ export function Catalog({
   onAdd: (id: string) => void
   onInc: (id: string) => void
   onDec: (id: string) => void
+  tipoCliente: TipoCliente
 }) {
   const catObj = CATEGORIAS_BASE.find((c) => c.id === cat) ?? CATEGORIAS_BASE[0]
   const q = query.trim().toLowerCase()
@@ -81,7 +83,7 @@ export function Catalog({
 
       <div className="grid">
         {filtered.map((p) => (
-          <ProductCard key={p.id} p={p} qty={cart[p.id] || 0} onAdd={onAdd} onInc={onInc} onDec={onDec} />
+          <ProductCard key={p.id} p={p} qty={cart[p.id] || 0} onAdd={onAdd} onInc={onInc} onDec={onDec} tipoCliente={tipoCliente} />
         ))}
       </div>
 

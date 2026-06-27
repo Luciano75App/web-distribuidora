@@ -1,19 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { STORE, fmtARS } from '@/lib/types'
-import type { Producto } from '@/lib/types'
+import { STORE, fmtARS, precioPara } from '@/lib/types'
+import type { Producto, TipoCliente } from '@/lib/types'
 import { crearPedidoWeb } from '@/app/actions'
 
 const STEPS = [
-  { key: 'tipo', label: 'Tipo de cliente' },
-  { key: 'datos', label: 'Datos & entrega' },
+  { key: 'datos',   label: 'Datos & entrega' },
   { key: 'confirm', label: 'Confirmar pedido' },
-  { key: 'done', label: 'Pedido enviado' },
+  { key: 'done',    label: 'Pedido enviado' },
 ]
 
 interface Form {
-  tipo: '' | 'consumidor' | 'mayorista'
   nombre: string
   cuit: string
   razon: string
@@ -24,17 +22,18 @@ interface Form {
 }
 
 const FORM_INICIAL: Form = {
-  tipo: '', nombre: '', cuit: '', razon: '', whatsapp: '', domicilio: '', localidad: 'Córdoba', notas: '',
+  nombre: '', cuit: '', razon: '', whatsapp: '', domicilio: '', localidad: 'Córdoba', notas: '',
 }
 
 export function Checkout({
-  open, onClose, cart, products, onClearCart,
+  open, onClose, cart, products, onClearCart, tipoCliente,
 }: {
   open: boolean
   onClose: () => void
   cart: Record<string, number>
   products: Producto[]
   onClearCart: () => void
+  tipoCliente: TipoCliente
 }) {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState<Form>(FORM_INICIAL)
@@ -47,14 +46,14 @@ export function Checkout({
   const items = Object.keys(cart)
     .map((id) => {
       const p = productMap.get(id)
-      return p ? { ...p, qty: cart[id] } : null
+      return p ? { ...p, qty: cart[id], precio: precioPara(p, tipoCliente) } : null
     })
-    .filter((x): x is Producto & { qty: number } => x !== null)
+    .filter((x): x is Producto & { qty: number; precio: number } => x !== null)
 
-  const subtotal = items.reduce((a, it) => a + it.precio_venta * it.qty, 0)
+  const subtotal = items.reduce((a, it) => a + it.precio * it.qty, 0)
   const envio = subtotal >= STORE.envioGratisDesde || subtotal === 0 ? 0 : 2500
   const total = subtotal + envio
-  const isMayorista = form.tipo === 'mayorista'
+  const isMayorista = tipoCliente === 'mayorista'
 
   useEffect(() => {
     if (open) {
@@ -68,8 +67,7 @@ export function Checkout({
 
   function validateStep() {
     const e: Record<string, string> = {}
-    if (step === 0 && !form.tipo) e.tipo = 'Elegí una opción'
-    if (step === 1) {
+    if (step === 0) {
       if (!form.nombre.trim()) e.nombre = 'Requerido'
       if (!form.domicilio.trim()) e.domicilio = 'Requerido'
       const wa = form.whatsapp.replace(/\D/g, '')
@@ -86,11 +84,11 @@ export function Checkout({
 
   async function next() {
     if (!validateStep()) return
-    if (step === 2) {
+    if (step === 1) {
       setSending(true)
       setSendError('')
       const res = await crearPedidoWeb({
-        tipo: form.tipo as 'consumidor' | 'mayorista',
+        tipo: tipoCliente,
         nombre: form.nombre.trim(),
         cuit: form.cuit.trim(),
         razon: form.razon.trim(),
@@ -103,7 +101,7 @@ export function Checkout({
       setSending(false)
       if (!res.ok) { setSendError(res.error); return }
       setOrderNumero(res.numero)
-      setStep(3)
+      setStep(2)
       return
     }
     setStep((s) => s + 1)
@@ -120,12 +118,12 @@ export function Checkout({
   if (!open) return null
 
   return (
-    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget && step !== 3) onClose() }}>
+    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget && step !== 2) onClose() }}>
       <div className="modal">
         <header className="modal__head">
           <div className="modal__head-top">
-            <h2 className="modal__title">{step === 3 ? '¡Pedido confirmado!' : 'Finalizar compra'}</h2>
-            {step !== 3 && (
+            <h2 className="modal__title">{step === 2 ? '¡Pedido confirmado!' : 'Finalizar compra'}</h2>
+            {step !== 2 && (
               <button className="modal__close" onClick={onClose} aria-label="Cerrar">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M6 6l12 12M18 6L6 18" />
@@ -137,14 +135,13 @@ export function Checkout({
         </header>
 
         <div className="modal__body">
-          {step === 0 && <StepTipo form={form} set={set} err={errors} />}
-          {step === 1 && <StepDatos form={form} set={set} err={errors} isMayorista={isMayorista} />}
-          {step === 2 && <StepConfirm form={form} items={items} subtotal={subtotal} envio={envio} total={total} />}
-          {step === 3 && orderNumero !== null && <StepDone form={form} numero={orderNumero} total={total} items={items} />}
+          {step === 0 && <StepDatos form={form} set={set} err={errors} isMayorista={isMayorista} />}
+          {step === 1 && <StepConfirm form={form} items={items} subtotal={subtotal} envio={envio} total={total} isMayorista={isMayorista} />}
+          {step === 2 && orderNumero !== null && <StepDone form={form} numero={orderNumero} total={total} items={items} />}
         </div>
 
         <footer className="modal__foot">
-          {step === 3 ? (
+          {step === 2 ? (
             <>
               <div style={{ fontSize: 12.5, color: 'var(--ink-3)', fontFamily: 'var(--mono)', letterSpacing: '.1em' }}>
                 #{orderNumero} · {fmtARS(total)}
@@ -157,7 +154,7 @@ export function Checkout({
               <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
                 {sendError && <div className="field__err">{sendError}</div>}
                 <button className="btn" onClick={next} disabled={sending}>
-                  {sending ? 'Enviando…' : step === 2 ? 'Enviar pedido' : 'Continuar'}
+                  {sending ? 'Enviando…' : step === 1 ? 'Enviar pedido' : 'Continuar'}
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                     <path d="M5 12h14M13 5l7 7-7 7" />
                   </svg>
@@ -183,29 +180,6 @@ function Stepper({ step }: { step: number }) {
           {i < STEPS.length - 1 && <div className="stepper__bar" />}
         </div>
       ))}
-    </div>
-  )
-}
-
-function StepTipo({ form, set, err }: { form: Form; set: (k: keyof Form, v: string) => void; err: Record<string, string> }) {
-  return (
-    <div>
-      <p style={{ color: 'var(--ink-2)', marginTop: 0, marginBottom: 20, fontSize: 14 }}>
-        Contanos quién sos para mostrarte la mejor experiencia.
-      </p>
-      <div className="choice-grid">
-        <button className={'choice ' + (form.tipo === 'consumidor' ? 'sel' : '')} onClick={() => set('tipo', 'consumidor')}>
-          <span className="choice__icon">◐</span>
-          <h3 className="choice__title">Consumidor final</h3>
-          <p className="choice__desc">Compro para mi casa o para regalar. Sin mínimo de compra.</p>
-        </button>
-        <button className={'choice ' + (form.tipo === 'mayorista' ? 'sel' : '')} onClick={() => set('tipo', 'mayorista')}>
-          <span className="choice__icon">◉</span>
-          <h3 className="choice__title">Comerciante / Mayorista</h3>
-          <p className="choice__desc">Compro para revender. Mínimo {fmtARS(STORE.minMayorista)} · necesitás CUIT.</p>
-        </button>
-      </div>
-      {err.tipo && <div className="field__err">{err.tipo}</div>}
     </div>
   )
 }
@@ -268,9 +242,8 @@ function StepDatos({
 }
 
 function StepConfirm({
-  form, items, subtotal, envio, total,
-}: { form: Form; items: (Producto & { qty: number })[]; subtotal: number; envio: number; total: number }) {
-  const isMayorista = form.tipo === 'mayorista'
+  form, items, subtotal, envio, total, isMayorista,
+}: { form: Form; items: (Producto & { qty: number; precio: number })[]; subtotal: number; envio: number; total: number; isMayorista: boolean }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
       <div>
@@ -298,7 +271,7 @@ function StepConfirm({
               {items.map((it) => (
                 <div key={it.id} className="summary__item">
                   <span>{it.qty}× {it.nombre}</span>
-                  <span>{fmtARS(it.precio_venta * it.qty)}</span>
+                  <span>{fmtARS(it.precio * it.qty)}</span>
                 </div>
               ))}
             </div>

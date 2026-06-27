@@ -118,6 +118,20 @@ a { color: inherit; }
 .search svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--ink-3); }
 
 .header-actions { display: flex; align-items: center; gap: 6px; }
+.tipo-cliente-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--bg-2);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: border-color .15s, color .15s;
+}
+.tipo-cliente-btn:hover { border-color: var(--gold); color: var(--ink); }
+.tipo-cliente-btn__dot { width: 7px; height: 7px; border-radius: 999px; background: var(--gold); }
 .icon-btn {
   width: 42px; height: 42px;
   border-radius: 999px;

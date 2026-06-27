@@ -1,3 +1,5 @@
+export type TipoCliente = 'consumidor' | 'mayorista'
+
 export interface Producto {
   id: string
   nombre: string
@@ -7,8 +9,14 @@ export interface Producto {
   presentacion: string | null
   unidad_medida: string | null
   precio_venta: number
+  precio_mayorista?: number | null
   stock_actual: number
   imagen_url?: string | null
+}
+
+export function precioPara(p: Producto, tipo: TipoCliente): number {
+  if (tipo === 'mayorista' && p.precio_mayorista != null) return p.precio_mayorista
+  return p.precio_venta
 }
 
 export interface Promo {

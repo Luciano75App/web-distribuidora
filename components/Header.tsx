@@ -1,12 +1,16 @@
 'use client'
 
+import type { TipoCliente } from '@/lib/types'
+
 export function Header({
-  query, onQuery, cartCount, onOpenCart,
+  query, onQuery, cartCount, onOpenCart, tipoCliente, onOpenTipoCliente,
 }: {
   query: string
   onQuery: (v: string) => void
   cartCount: number
   onOpenCart: () => void
+  tipoCliente: TipoCliente | null
+  onOpenTipoCliente: () => void
 }) {
   return (
     <header className="app-header">
@@ -40,6 +44,10 @@ export function Header({
         </div>
 
         <div className="header-actions">
+          <button className="tipo-cliente-btn" onClick={onOpenTipoCliente} title="Cambiar tipo de cliente">
+            <span className="tipo-cliente-btn__dot" />
+            {tipoCliente === 'mayorista' ? 'Comercio' : 'Consumidor final'}
+          </button>
           <button
             className="icon-btn"
             title="Compartir página web"

@@ -1,10 +1,10 @@
 'use client'
 
-import { STORE, fmtARS } from '@/lib/types'
-import type { Producto } from '@/lib/types'
+import { STORE, fmtARS, precioPara } from '@/lib/types'
+import type { Producto, TipoCliente } from '@/lib/types'
 import { ProductMedia } from './ProductMedia'
 
-interface CartLine extends Producto { qty: number }
+interface CartLine extends Producto { qty: number; precio: number }
 
 function LineItem({
   it, onInc, onDec, onRemove,
@@ -21,14 +21,14 @@ function LineItem({
       </div>
       <div>
         <p className="line-item__name">{it.nombre}</p>
-        <p className="line-item__unit">{it.presentacion ?? ''} · {fmtARS(it.precio_venta)}</p>
+        <p className="line-item__unit">{it.presentacion ?? ''} · {fmtARS(it.precio)}</p>
         <div className="line-item__bot">
           <div className="qty">
             <button onClick={() => onDec(it.id)}>−</button>
             <span className="qty__n">{it.qty}</span>
             <button onClick={() => onInc(it.id)}>+</button>
           </div>
-          <div className="line-item__price">{fmtARS(it.precio_venta * it.qty)}</div>
+          <div className="line-item__price">{fmtARS(it.precio * it.qty)}</div>
         </div>
       </div>
       <button
@@ -46,7 +46,7 @@ function LineItem({
 }
 
 export function CartDrawer({
-  open, onClose, cart, products, onInc, onDec, onRemove, onCheckout,
+  open, onClose, cart, products, onInc, onDec, onRemove, onCheckout, tipoCliente,
 }: {
   open: boolean
   onClose: () => void
@@ -56,18 +56,22 @@ export function CartDrawer({
   onDec: (id: string) => void
   onRemove: (id: string) => void
   onCheckout: () => void
+  tipoCliente: TipoCliente
 }) {
   const productMap = new Map(products.map(p => [p.id, p]))
   const items: CartLine[] = Object.keys(cart)
     .map((id) => {
       const p = productMap.get(id)
-      return p ? { ...p, qty: cart[id] } : null
+      return p ? { ...p, qty: cart[id], precio: precioPara(p, tipoCliente) } : null
     })
     .filter((x): x is CartLine => x !== null)
 
-  const subtotal = items.reduce((a, it) => a + it.precio_venta * it.qty, 0)
+  const subtotal = items.reduce((a, it) => a + it.precio * it.qty, 0)
   const envio = subtotal >= STORE.envioGratisDesde || subtotal === 0 ? 0 : 2500
   const total = subtotal + envio
+  const isMayorista = tipoCliente === 'mayorista'
+  const cumpleMin = !isMayorista || subtotal >= STORE.minMayorista
+  const faltante = STORE.minMayorista - subtotal
 
   return (
     <>
@@ -102,6 +106,12 @@ export function CartDrawer({
 
         {items.length > 0 && (
           <footer className="drawer__foot">
+            {isMayorista && !cumpleMin && (
+              <div className="warn">
+                <span>!</span>
+                <span>Te faltan <strong>{fmtARS(faltante)}</strong> para alcanzar el mínimo mayorista de {fmtARS(STORE.minMayorista)}.</span>
+              </div>
+            )}
             {subtotal >= STORE.envioGratisDesde && (
               <div className="success-soft">
                 <span>✓</span>
@@ -113,7 +123,7 @@ export function CartDrawer({
               <div className="totals__row muted"><span>Envío</span><span>{envio === 0 ? 'GRATIS' : fmtARS(envio)}</span></div>
               <div className="totals__row grand"><span>Total</span><strong>{fmtARS(total)}</strong></div>
             </div>
-            <button className="btn" onClick={onCheckout}>
+            <button className="btn" onClick={onCheckout} disabled={isMayorista && !cumpleMin}>
               Confirmar compra
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                 <path d="M5 12h14M13 5l7 7-7 7" />

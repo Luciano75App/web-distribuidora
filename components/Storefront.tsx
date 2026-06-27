@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CATEGORIAS_BASE, STORE } from '@/lib/types'
-import type { Producto, Promo } from '@/lib/types'
+import type { Producto, Promo, TipoCliente } from '@/lib/types'
 import { Header } from './Header'
 import { Hero } from './Hero'
 import { CategoryShowcase } from './CategoryShowcase'
@@ -11,6 +11,9 @@ import { Catalog } from './Catalog'
 import { CartDrawer } from './CartDrawer'
 import { Checkout } from './Checkout'
 import { Footer } from './Footer'
+import { TipoClienteModal } from './TipoClienteModal'
+
+const LS_KEY = 'cb_tipo_cliente'
 
 export function Storefront({ products, promos }: { products: Producto[]; promos: Promo[] }) {
   const [query, setQuery] = useState('')
@@ -18,6 +21,23 @@ export function Storefront({ products, promos }: { products: Producto[]; promos:
   const [cart, setCart] = useState<Record<string, number>>({})
   const [cartOpen, setCartOpen] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [tipoCliente, setTipoCliente] = useState<TipoCliente | null>(null)
+  const [tipoModalOpen, setTipoModalOpen] = useState(false)
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(LS_KEY)
+    if (saved === 'consumidor' || saved === 'mayorista') {
+      setTipoCliente(saved)
+    } else {
+      setTipoModalOpen(true)
+    }
+  }, [])
+
+  function selectTipoCliente(tipo: TipoCliente) {
+    setTipoCliente(tipo)
+    window.localStorage.setItem(LS_KEY, tipo)
+    setTipoModalOpen(false)
+  }
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: products.length }
@@ -57,17 +77,22 @@ export function Storefront({ products, promos }: { products: Producto[]; promos:
     }, 50)
   }
 
+  const tipoEfectivo: TipoCliente = tipoCliente ?? 'consumidor'
+
   return (
     <>
-      <Header query={query} onQuery={setQuery} cartCount={cartCount} onOpenCart={() => setCartOpen(true)} />
+      <Header
+        query={query} onQuery={setQuery} cartCount={cartCount} onOpenCart={() => setCartOpen(true)}
+        tipoCliente={tipoCliente} onOpenTipoCliente={() => setTipoModalOpen(true)}
+      />
 
-      <Hero promos={promos} products={products} onAddPromo={addFromPromo} />
+      <Hero promos={promos} products={products} onAddPromo={addFromPromo} tipoCliente={tipoEfectivo} />
 
       <CategoryShowcase counts={counts} onSelect={jumpToCat} />
 
       <CategoryBar active={activeCat} onSelect={setActiveCat} counts={counts} />
 
-      <Catalog cat={activeCat} query={query} cart={cart} products={products} onAdd={add} onInc={inc} onDec={dec} />
+      <Catalog cat={activeCat} query={query} cart={cart} products={products} onAdd={add} onInc={inc} onDec={dec} tipoCliente={tipoEfectivo} />
 
       <CartDrawer
         open={cartOpen}
@@ -78,6 +103,7 @@ export function Storefront({ products, promos }: { products: Producto[]; promos:
         onDec={dec}
         onRemove={remove}
         onCheckout={goCheckout}
+        tipoCliente={tipoEfectivo}
       />
 
       <Checkout
@@ -86,6 +112,14 @@ export function Storefront({ products, promos }: { products: Producto[]; promos:
         cart={cart}
         products={products}
         onClearCart={clearCart}
+        tipoCliente={tipoEfectivo}
+      />
+
+      <TipoClienteModal
+        open={tipoModalOpen}
+        onClose={() => setTipoModalOpen(false)}
+        onSelect={selectTipoCliente}
+        current={tipoCliente}
       />
 
       <a className="wa-float" href={`https://wa.me/54${STORE.whatsapp}`} target="_blank" rel="noopener" title="Hablar por WhatsApp">

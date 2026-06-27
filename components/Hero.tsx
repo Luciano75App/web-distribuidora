@@ -1,16 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { STORE, fmtARS } from '@/lib/types'
-import type { Producto, Promo } from '@/lib/types'
+import { STORE, fmtARS, precioPara } from '@/lib/types'
+import type { Producto, Promo, TipoCliente } from '@/lib/types'
 import { ProductMedia } from './ProductMedia'
 
 function PromoCarousel({
-  promos, products, onAdd,
+  promos, products, onAdd, tipoCliente,
 }: {
   promos: Promo[]
   products: Producto[]
   onAdd: (id: string) => void
+  tipoCliente: TipoCliente
 }) {
   const [i, setI] = useState(0)
   const [paused, setPaused] = useState(false)
@@ -34,7 +35,7 @@ function PromoCarousel({
           return (
             <article key={p.id} className="promo__slide" style={{ '--accent': '#e8c468' } as React.CSSProperties}>
               <div className="promo__text">
-                {producto && <p className="promo__eyebrow">{fmtARS(producto.precio_venta)}</p>}
+                {producto && <p className="promo__eyebrow">{fmtARS(precioPara(producto, tipoCliente))}</p>}
                 <h3 className="promo__title">{p.titulo}</h3>
                 {p.texto && <p className="promo__sub">{p.texto}</p>}
                 {producto && (
@@ -79,11 +80,12 @@ function PromoCarousel({
 }
 
 export function Hero({
-  promos, products, onAddPromo,
+  promos, products, onAddPromo, tipoCliente,
 }: {
   promos: Promo[]
   products: Producto[]
   onAddPromo: (id: string) => void
+  tipoCliente: TipoCliente
 }) {
   return (
     <section className="hero">
@@ -126,7 +128,7 @@ export function Hero({
           </div>
         </div>
 
-        {promos.length > 0 && <PromoCarousel promos={promos} products={products} onAdd={onAddPromo} />}
+        {promos.length > 0 && <PromoCarousel promos={promos} products={products} onAdd={onAddPromo} tipoCliente={tipoCliente} />}
       </div>
     </section>
   )
