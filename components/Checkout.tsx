@@ -26,7 +26,7 @@ const FORM_INICIAL: Form = {
 }
 
 export function Checkout({
-  open, onClose, cart, products, onClearCart, tipoCliente,
+  open, onClose, cart, products, onClearCart, tipoCliente, vendedorId,
 }: {
   open: boolean
   onClose: () => void
@@ -34,6 +34,7 @@ export function Checkout({
   products: Producto[]
   onClearCart: () => void
   tipoCliente: TipoCliente
+  vendedorId: string | null
 }) {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState<Form>(FORM_INICIAL)
@@ -97,6 +98,7 @@ export function Checkout({
         localidad: form.localidad.trim(),
         notas: form.notas.trim(),
         items: items.map((it) => ({ producto_id: it.id, cantidad: it.qty })),
+        vendedorId,
       })
       setSending(false)
       if (!res.ok) { setSendError(res.error); return }

@@ -14,8 +14,15 @@ import { Footer } from './Footer'
 import { TipoClienteModal } from './TipoClienteModal'
 
 const LS_KEY = 'cb_tipo_cliente'
+const LS_REF_KEY = 'cb_vendedor_ref'
 
-export function Storefront({ products, promos }: { products: Producto[]; promos: Promo[] }) {
+export function Storefront({
+  products, promos, vendedorRef,
+}: {
+  products: Producto[]
+  promos: Promo[]
+  vendedorRef: string | null
+}) {
   const [query, setQuery] = useState('')
   const [activeCat, setActiveCat] = useState('all')
   const [cart, setCart] = useState<Record<string, number>>({})
@@ -23,6 +30,7 @@ export function Storefront({ products, promos }: { products: Producto[]; promos:
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [tipoCliente, setTipoCliente] = useState<TipoCliente | null>(null)
   const [tipoModalOpen, setTipoModalOpen] = useState(false)
+  const [vendedorId, setVendedorId] = useState<string | null>(null)
 
   useEffect(() => {
     const saved = window.localStorage.getItem(LS_KEY)
@@ -32,6 +40,17 @@ export function Storefront({ products, promos }: { products: Producto[]; promos:
       setTipoModalOpen(true)
     }
   }, [])
+
+  // Atribución de vendedor: si llega ?ref= en la URL, queda guardado para
+  // todo lo que el visitante compre en esta sesión (aunque navegue sin el parámetro).
+  useEffect(() => {
+    if (vendedorRef) {
+      window.localStorage.setItem(LS_REF_KEY, vendedorRef)
+      setVendedorId(vendedorRef)
+    } else {
+      setVendedorId(window.localStorage.getItem(LS_REF_KEY))
+    }
+  }, [vendedorRef])
 
   function selectTipoCliente(tipo: TipoCliente) {
     setTipoCliente(tipo)
@@ -113,6 +132,7 @@ export function Storefront({ products, promos }: { products: Producto[]; promos:
         products={products}
         onClearCart={clearCart}
         tipoCliente={tipoEfectivo}
+        vendedorId={vendedorId}
       />
 
       <TipoClienteModal

@@ -12,6 +12,7 @@ export interface CrearPedidoInput {
   localidad: string
   notas: string
   items: { producto_id: string; cantidad: number }[]
+  vendedorId: string | null
 }
 
 export async function crearPedidoWeb(input: CrearPedidoInput) {
@@ -25,6 +26,7 @@ export async function crearPedidoWeb(input: CrearPedidoInput) {
     p_localidad: input.localidad,
     p_notas: input.notas || null,
     p_items: input.items,
+    p_vendedor_id: input.vendedorId,
   })
 
   if (error) {
