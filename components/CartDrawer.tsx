@@ -3,6 +3,7 @@
 import { STORE, fmtARS, precioPara } from '@/lib/types'
 import type { Producto, TipoCliente } from '@/lib/types'
 import { ProductMedia } from './ProductMedia'
+import { RelatedProducts } from './RelatedProducts'
 
 interface CartLine extends Producto { qty: number; precio: number }
 
@@ -46,7 +47,7 @@ function LineItem({
 }
 
 export function CartDrawer({
-  open, onClose, cart, products, onInc, onDec, onRemove, onCheckout, tipoCliente,
+  open, onClose, cart, products, onInc, onDec, onRemove, onCheckout, tipoCliente, onAdd,
 }: {
   open: boolean
   onClose: () => void
@@ -57,6 +58,7 @@ export function CartDrawer({
   onRemove: (id: string) => void
   onCheckout: () => void
   tipoCliente: TipoCliente
+  onAdd: (id: string) => void
 }) {
   const productMap = new Map(products.map(p => [p.id, p]))
   const items: CartLine[] = Object.keys(cart)
@@ -103,6 +105,10 @@ export function CartDrawer({
             </div>
           )}
         </div>
+
+        {items.length > 0 && (
+          <RelatedProducts cartIds={items.map((it) => it.id)} products={products} tipoCliente={tipoCliente} onAdd={onAdd} />
+        )}
 
         {items.length > 0 && (
           <footer className="drawer__foot">

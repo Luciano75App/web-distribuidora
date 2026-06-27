@@ -123,6 +123,7 @@ export function Storefront({
         onRemove={remove}
         onCheckout={goCheckout}
         tipoCliente={tipoEfectivo}
+        onAdd={add}
       />
 
       <Checkout
