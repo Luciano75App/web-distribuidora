@@ -9,13 +9,15 @@ export interface Producto {
   presentacion: string | null
   unidad_medida: string | null
   precio_venta: number
-  precio_mayorista?: number | null
+  precio_consumidor_final?: number | null
   stock_actual: number
   imagen_url?: string | null
 }
 
+// precio_venta = lo que ya se usa para comercios/mayoristas en toda la app.
+// precio_consumidor_final = precio diferenciado para venta directa por la web.
 export function precioPara(p: Producto, tipo: TipoCliente): number {
-  if (tipo === 'mayorista' && p.precio_mayorista != null) return p.precio_mayorista
+  if (tipo === 'consumidor' && p.precio_consumidor_final != null) return p.precio_consumidor_final
   return p.precio_venta
 }
 

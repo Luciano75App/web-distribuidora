@@ -77,7 +77,7 @@ BEGIN
     IF v_cant <= 0 THEN CONTINUE; END IF;
 
     v_precio := CASE
-      WHEN p_tipo_cliente = 'mayorista' AND v_prod.precio_mayorista IS NOT NULL THEN v_prod.precio_mayorista
+      WHEN p_tipo_cliente = 'consumidor' AND v_prod.precio_consumidor_final IS NOT NULL THEN v_prod.precio_consumidor_final
       ELSE v_prod.precio_venta
     END;
 
