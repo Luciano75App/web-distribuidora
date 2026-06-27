@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { STORE, fmtARS, precioPara } from '@/lib/types'
+import { STORE, fmtARS, precioPara, ZONAS_COBERTURA } from '@/lib/types'
 import type { Producto, TipoCliente } from '@/lib/types'
 import { crearPedidoWeb } from '@/app/actions'
 
@@ -22,7 +22,7 @@ interface Form {
 }
 
 const FORM_INICIAL: Form = {
-  nombre: '', cuit: '', razon: '', whatsapp: '', domicilio: '', localidad: 'Córdoba', notas: '',
+  nombre: '', cuit: '', razon: '', whatsapp: '', domicilio: '', localidad: '', notas: '',
 }
 
 export function Checkout({
@@ -71,6 +71,7 @@ export function Checkout({
     if (step === 0) {
       if (!form.nombre.trim()) e.nombre = 'Requerido'
       if (!form.domicilio.trim()) e.domicilio = 'Requerido'
+      if (!ZONAS_COBERTURA.includes(form.localidad)) e.localidad = 'Elegí una zona de entrega'
       const wa = form.whatsapp.replace(/\D/g, '')
       if (wa.length < 8) e.whatsapp = 'Mínimo 8 dígitos'
       if (isMayorista) {
@@ -224,8 +225,13 @@ function StepDatos({
       </div>
 
       <div className="field">
-        <label className="field__label">Localidad</label>
-        <input value={form.localidad} onChange={(e) => set('localidad', e.target.value)} />
+        <label className="field__label req">Zona de entrega</label>
+        <select value={form.localidad} onChange={(e) => set('localidad', e.target.value)}>
+          <option value="">Elegí tu zona...</option>
+          {ZONAS_COBERTURA.map((z) => <option key={z} value={z}>{z}</option>)}
+        </select>
+        <div className="field__hint">Por ahora solo entregamos en estas zonas.</div>
+        {err.localidad && <div className="field__err">{err.localidad}</div>}
       </div>
 
       <div className="field">

@@ -64,3 +64,18 @@ export const CATEGORIAS_BASE: Categoria[] = [
 ]
 
 export const fmtARS = (n: number) => '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 0 })
+
+// Zonas donde hacemos reparto actualmente. El checkout solo deja elegir entre estas.
+export const ZONAS_COBERTURA = [
+  'La Calera',
+  'Saldán',
+  'Villa Allende',
+  'Mendiolaza',
+  'Unquillo',
+  'Barrio Don Bosco (Córdoba)',
+  'Barrio Chateau (Córdoba)',
+  'Barrio Quebrada de las Rosas (Córdoba)',
+  'Torre Gama (Córdoba)',
+  'Torre Sol (Córdoba)',
+  'Av. Don Bosco (Córdoba)',
+]
