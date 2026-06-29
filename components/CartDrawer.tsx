@@ -1,6 +1,6 @@
 'use client'
 
-import { STORE, fmtARS, precioPara } from '@/lib/types'
+import { STORE, fmtARS, precioPara, calcularEnvio } from '@/lib/types'
 import type { Producto, TipoCliente } from '@/lib/types'
 import { ProductMedia } from './ProductMedia'
 import { RelatedProducts } from './RelatedProducts'
@@ -69,7 +69,7 @@ export function CartDrawer({
     .filter((x): x is CartLine => x !== null)
 
   const subtotal = items.reduce((a, it) => a + it.precio * it.qty, 0)
-  const envio = subtotal >= STORE.envioGratisDesde || subtotal === 0 ? 0 : 2500
+  const envio = calcularEnvio(subtotal, tipoCliente)
   const total = subtotal + envio
   const isMayorista = tipoCliente === 'mayorista'
   const cumpleMin = !isMayorista || subtotal >= STORE.minMayorista

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { STORE, fmtARS, precioPara, ZONAS_COBERTURA } from '@/lib/types'
+import { fmtARS, precioPara, calcularEnvio, ZONAS_COBERTURA, ZONA_DIA_REPARTO } from '@/lib/types'
 import type { Producto, TipoCliente } from '@/lib/types'
 import { crearPedidoWeb } from '@/app/actions'
 
@@ -52,7 +52,7 @@ export function Checkout({
     .filter((x): x is Producto & { qty: number; precio: number } => x !== null)
 
   const subtotal = items.reduce((a, it) => a + it.precio * it.qty, 0)
-  const envio = subtotal >= STORE.envioGratisDesde || subtotal === 0 ? 0 : 2500
+  const envio = calcularEnvio(subtotal, tipoCliente)
   const total = subtotal + envio
   const isMayorista = tipoCliente === 'mayorista'
 
@@ -230,7 +230,11 @@ function StepDatos({
           <option value="">Elegí tu zona...</option>
           {ZONAS_COBERTURA.map((z) => <option key={z} value={z}>{z}</option>)}
         </select>
-        <div className="field__hint">Por ahora solo entregamos en estas zonas.</div>
+        <div className="field__hint">
+          {form.localidad && ZONA_DIA_REPARTO[form.localidad]
+            ? <>Entregamos en esta zona los días <strong style={{ color: 'var(--gold)' }}>{ZONA_DIA_REPARTO[form.localidad]}</strong>.</>
+            : 'Por ahora solo entregamos en estas zonas.'}
+        </div>
         {err.localidad && <div className="field__err">{err.localidad}</div>}
       </div>
 
@@ -268,6 +272,11 @@ function StepConfirm({
             <h4>Entrega a</h4>
             <p>{form.domicilio}</p>
             <p style={{ color: 'var(--ink-3)', fontSize: 13 }}>{form.localidad}</p>
+            {ZONA_DIA_REPARTO[form.localidad] && (
+              <p style={{ fontSize: 12.5, color: 'var(--gold)', fontFamily: 'var(--mono)', marginTop: 2 }}>
+                Reparto: {ZONA_DIA_REPARTO[form.localidad]}
+              </p>
+            )}
           </div>
           <div className="summary__sec">
             <h4>WhatsApp</h4>
@@ -320,7 +329,10 @@ function StepDone({
       <div className="success-art__code">#{numero}</div>
       <p style={{ color: 'var(--ink-2)', maxWidth: 420, margin: '20px auto 0', fontSize: 14, lineHeight: 1.6 }}>
         Te contactamos a tu WhatsApp <strong style={{ color: 'var(--gold)', fontFamily: 'var(--mono)' }}>{form.whatsapp}</strong> para
-        confirmar tu pedido y coordinar el horario de entrega.
+        confirmar tu pedido.
+        {ZONA_DIA_REPARTO[form.localidad] && (
+          <> El reparto en tu zona es los días <strong style={{ color: 'var(--gold)' }}>{ZONA_DIA_REPARTO[form.localidad]}</strong>.</>
+        )}
       </p>
       <div style={{ marginTop: 28, display: 'grid', gridTemplateColumns: 'repeat(3, auto)', gap: 14, justifyContent: 'center', color: 'var(--ink-3)', fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '.1em' }}>
         <div><span style={{ color: 'var(--gold)' }}>{items.length}</span> ÍTEMS</div>

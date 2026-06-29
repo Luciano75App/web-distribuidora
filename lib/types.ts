@@ -45,6 +45,15 @@ export const STORE = {
   whatsappFmt: '+54 9 351 205-3916',
   minMayorista: 30000,
   envioGratisDesde: 30000,
+  envioConsumidor: 3000,
+}
+
+// Comercio: nunca paga envío (ya tiene mínimo de compra de $30.000).
+// Consumidor final: paga $3.000 si no llega a $30.000, gratis si lo supera.
+export function calcularEnvio(subtotal: number, tipo: TipoCliente): number {
+  if (subtotal <= 0) return 0
+  if (tipo === 'mayorista') return 0
+  return subtotal >= STORE.envioGratisDesde ? 0 : STORE.envioConsumidor
 }
 
 export const CATEGORIAS_BASE: Categoria[] = [
@@ -72,6 +81,7 @@ export const ZONAS_COBERTURA = [
   'Villa Allende',
   'Mendiolaza',
   'Unquillo',
+  'Argüello (Córdoba)',
   'Barrio Don Bosco (Córdoba)',
   'Barrio Chateau (Córdoba)',
   'Barrio Quebrada de las Rosas (Córdoba)',
@@ -79,3 +89,19 @@ export const ZONAS_COBERTURA = [
   'Torre Sol (Córdoba)',
   'Av. Don Bosco (Córdoba)',
 ]
+
+// Día de reparto fijo según la zona.
+export const ZONA_DIA_REPARTO: Record<string, string> = {
+  'La Calera': 'Martes',
+  'Saldán': 'Jueves',
+  'Villa Allende': 'Jueves',
+  'Mendiolaza': 'Jueves',
+  'Unquillo': 'Jueves',
+  'Argüello (Córdoba)': 'Miércoles',
+  'Barrio Don Bosco (Córdoba)': 'Viernes',
+  'Barrio Chateau (Córdoba)': 'Viernes',
+  'Barrio Quebrada de las Rosas (Córdoba)': 'Viernes',
+  'Torre Gama (Córdoba)': 'Viernes',
+  'Torre Sol (Córdoba)': 'Viernes',
+  'Av. Don Bosco (Córdoba)': 'Viernes',
+}
