@@ -6,7 +6,6 @@ import type { Producto, Promo, TipoCliente } from '@/lib/types'
 import { Header } from './Header'
 import { Hero } from './Hero'
 import { CategoryShowcase } from './CategoryShowcase'
-import { CategoryBar } from './CategoryBar'
 import { Catalog } from './Catalog'
 import { CartDrawer } from './CartDrawer'
 import { Checkout } from './Checkout'
@@ -107,9 +106,7 @@ export function Storefront({
 
       <Hero promos={promos} products={products} onAddPromo={addFromPromo} tipoCliente={tipoEfectivo} />
 
-      <CategoryShowcase counts={counts} onSelect={jumpToCat} />
-
-      <CategoryBar active={activeCat} onSelect={setActiveCat} counts={counts} />
+      <CategoryShowcase active={activeCat} counts={counts} onSelect={jumpToCat} />
 
       <Catalog cat={activeCat} query={query} cart={cart} products={products} onAdd={add} onInc={inc} onDec={dec} tipoCliente={tipoEfectivo} />
 
